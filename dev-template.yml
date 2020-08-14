@@ -37,6 +37,7 @@ Resources:
                 Action:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
                 Resource: "arn:aws:sqs:us-east-2:848625190772:ProductClassifierQueue"
         - PolicyName: allowDynamo
           PolicyDocument:
