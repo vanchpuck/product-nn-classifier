@@ -38,6 +38,7 @@ Resources:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
                 Resource: "arn:aws:sqs:us-east-2:848625190772:ProductClassifierQueue"
         - PolicyName: allowDynamo
           PolicyDocument:
@@ -47,6 +48,15 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                 Resource: "arn:aws:dynamodb:us-east-2:848625190772:table/products"
+        - PolicyName: allowS3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource: "arn:aws:s3:::org.gear-scanner/data/*"
   ProductNNClassifierDevFunction:
     Type: AWS::Serverless::Function
     Properties:
