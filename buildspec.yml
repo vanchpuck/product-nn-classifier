@@ -1,0 +1,14 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+  build:
+    commands:
+      - pip install --target . -r requirements.txt
+      - aws cloudformation package --template-file dev-template.yml --s3-bucket org.gear-scanner.build --s3-prefix product-nn-classifier/dev --output-template-file outputtemplate.yml
+artifacts:
+  type: zip
+  files:
+    - dev-template.yml
+    - outputtemplate.yml
