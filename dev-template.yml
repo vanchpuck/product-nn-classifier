@@ -56,7 +56,7 @@ Resources:
                 Action:
                   - s3:GetObject
                   - s3:GetObjectVersion
-                Resource: "arn:aws:s3:::org.gear-scanner/data/*"
+                Resource: "arn:aws:s3:::org.gear-scanner.data/*"
   ProductNNClassifierDevFunction:
     Type: AWS::Serverless::Function
     Properties:
