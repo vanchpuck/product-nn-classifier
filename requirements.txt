@@ -1,8 +1,0 @@
-elasticsearch==6.4.0
-requests
-pytest
-mock
-vk
-git+https://github.com/vanchpuck/gear-bot-core#egg=gear_bot_core
-sklearn
-numpy
