@@ -57,10 +57,23 @@ Resources:
                   - s3:GetObject
                   - s3:GetObjectVersion
                 Resource: "arn:aws:s3:::org.gear-scanner.data/*"
+  SciKitLearnLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: scikit-learn-layer
+      Description: SciKitLearn Dependency for sam app
+      Content:
+        S3Bucket: org.gear-scanner.data
+        S3Key: scikitlearn.zip
+      CompatibleRuntimes:
+        - python3.6
+        - python3.7
   ProductNNClassifierDevFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
       Handler: main.lambda_handler
       Runtime: python3.7
+      Layers:
+        - !Ref SciKitLearnLayer
       Role: !GetAtt ProductNNClassifierExecutionRole.Arn
