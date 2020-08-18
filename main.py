@@ -8,6 +8,7 @@ import numpy as np
 S3 = boto3.resource('s3')
 VOCABULARY_BUCKET = "org.gear-scanner.data"
 MODELS = dict()
+CLASSIFIER_PREFIX = "product-classifier"
 
 
 def lambda_handler(event, context):
@@ -18,18 +19,22 @@ def lambda_handler(event, context):
         if "brand" in message:
             brand = message["brand"]
             if brand not in MODELS:
-                MODELS[brand] = read_model_dump(VOCABULARY_BUCKET, "product-classifier/model/"+brand.lower())
+                brand = brand.lower()
+                model = read_dump(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "model.joblib"))
+                products = read_lines(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "products.txt"))
+                vectorizer = read_dump(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "vectorizer.joblib"))
+                MODELS[brand] = (products, vectorizer, model)
             original_name = classify(brand, message["name"])
             message["originalName"] = original_name
             print(message)
 
 
-def read_model(path):
-    model = S3.Object(VOCABULARY_BUCKET, path)
-    load(model)
+def read_lines(bucket, key):
+    obj = S3.Object(bucket, key)
+    return list(map(lambda line: line.decode('utf-8'), obj.get()['Body'].iter_lines()))
 
 
-def read_model_dump(bucket, key):
+def read_dump(bucket, key):
     local_path = "/tmp/" + key.replace("/", "-")
     S3.Bucket(bucket).download_file(key, local_path)
     with open(local_path, 'rb') as file:
