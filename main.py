@@ -5,6 +5,8 @@ import logging
 import boto3
 import numpy as np
 
+logging.getLogger().setLevel(logging.INFO)
+
 S3 = boto3.resource('s3')
 VOCABULARY_BUCKET = "org.gear-scanner.data"
 MODELS = dict()
@@ -55,13 +57,20 @@ def classify(brand, product_name):
 
 
 # if __name__ == "__main__":
-#     vm_pair = read_model_dump(VOCABULARY_BUCKET, "product-classifier/model/petzl")
-#     # execute only if run as a script
-#     # vm_pair = create_model("petzl")
-#     doc_term_matrix = vm_pair[1].transform(["lynx crampon"]).toarray()
-#     nearest = vm_pair[2].kneighbors(doc_term_matrix)
-#
-#     if nearest[0][0][0] == nearest[0][0][2]:
-#         print("unknown2")
-#     else:
-#         print(vm_pair[0][nearest[1][0][0]])
+#     brand = "petzl".lower()
+#     nn_model = read_dump(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "model.joblib"))
+#     products = read_lines(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "products.txt"))
+#     vectorizer = read_dump(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "vectorizer.joblib"))
+#     MODELS[brand] = (products, vectorizer, nn_model)
+#     original_name = classify(brand, "petzl lynx")
+#     print(original_name)
+#     # vm_pair = read_dump(VOCABULARY_BUCKET, "product-classifier/model/petzl")
+#     # # execute only if run as a script
+#     # # vm_pair = create_model("petzl")
+#     # doc_term_matrix = vm_pair[1].transform(["lynx crampon"]).toarray()
+#     # nearest = vm_pair[2].kneighbors(doc_term_matrix)
+#     #
+#     # if nearest[0][0][0] == nearest[0][0][2]:
+#     #     print("unknown2")
+#     # else:
+#     #     print(vm_pair[0][nearest[1][0][0]])
