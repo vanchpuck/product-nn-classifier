@@ -4,6 +4,7 @@ from joblib import load
 import logging
 import boto3
 import numpy as np
+import json
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -17,14 +18,15 @@ def lambda_handler(event, context):
     records = event['Records']
     for record in records:
         logging.info("Processing record: " + str(record))
-        message = record["body"]
+        message = json.loads(record["body"])
         if "brand" in message:
             brand = message["brand"]
             if brand not in MODELS:
                 brand = brand.lower()
                 model = read_dump(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "model.joblib"))
-                products = read_lines(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "products.txt"))
-                vectorizer = read_dump(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "vectorizer.joblib"))
+                products = list(read_lines(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "products.txt")))
+                vocabulary = read_lines(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "vocabulary.txt"))
+                vectorizer = CountVectorizer(ngram_range=(1, 2), binary=True, vocabulary=vocabulary)
                 MODELS[brand] = (products, vectorizer, model)
             original_name = classify(brand, message["name"])
             message["originalName"] = original_name
@@ -33,7 +35,7 @@ def lambda_handler(event, context):
 
 def read_lines(bucket, key):
     obj = S3.Object(bucket, key)
-    return list(map(lambda line: line.decode('utf-8'), obj.get()['Body'].iter_lines()))
+    return map(lambda line: line.decode('utf-8'), obj.get()['Body'].iter_lines())
 
 
 def read_dump(bucket, key):
@@ -57,20 +59,27 @@ def classify(brand, product_name):
 
 
 # if __name__ == "__main__":
-#     brand = "petzl".lower()
-#     nn_model = read_dump(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "model.joblib"))
-#     products = read_lines(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "products.txt"))
-#     vectorizer = read_dump(VOCABULARY_BUCKET, "{}/{}/{}".format(CLASSIFIER_PREFIX, brand, "vectorizer.joblib"))
-#     MODELS[brand] = (products, vectorizer, nn_model)
-#     original_name = classify(brand, "petzl lynx")
-#     print(original_name)
-#     # vm_pair = read_dump(VOCABULARY_BUCKET, "product-classifier/model/petzl")
-#     # # execute only if run as a script
-#     # # vm_pair = create_model("petzl")
-#     # doc_term_matrix = vm_pair[1].transform(["lynx crampon"]).toarray()
-#     # nearest = vm_pair[2].kneighbors(doc_term_matrix)
-#     #
-#     # if nearest[0][0][0] == nearest[0][0][2]:
-#     #     print("unknown2")
-#     # else:
-#     #     print(vm_pair[0][nearest[1][0][0]])
+#     record = {
+#         "Records": [
+#             {
+#                 "messageId": "19dd0b57-b21e-4ac1-bd88-01bbb068cb78",
+#                 "receiptHandle": "MessageReceiptHandle",
+#                 "body": u"""{
+#                     "brand": "petzl",
+#                     "name": "lynx crampons"
+#                 }""",
+#                 "attributes": {
+#                     "ApproximateReceiveCount": "1",
+#                     "SentTimestamp": "1523232000000",
+#                     "SenderId": "123456789012",
+#                     "ApproximateFirstReceiveTimestamp": "1523232000001"
+#                 },
+#                 "messageAttributes": {},
+#                 "md5OfBody": "7b270e59b47ff90a553787216d55d91d",
+#                 "eventSource": "aws:sqs",
+#                 "eventSourceARN": "arn:aws:sqs:us-east-2:123456789012:MyQueue",
+#                 "awsRegion": "us-east-2"
+#             }
+#         ]
+#     }
+#     lambda_handler(record, None)
