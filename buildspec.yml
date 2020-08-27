@@ -9,6 +9,7 @@ phases:
   build:
     commands:
       - command echo Running tests
+      - pip3 install pytest
       - command docker-compose up -d
       - command pytest test/
       - command docker-compose down
