@@ -3,9 +3,16 @@ phases:
   install:
     runtime-versions:
       python: 3.8
+  pre_build:
+    commands:
+      - command pip install --target . -r requirements.txt
   build:
     commands:
-      - pip install --target . -r requirements.txt
+      - command echo Running tests
+      - command docker-compose up -d
+      - command pytest test/
+      - command docker-compose down
+      - command echo Packaging
       - aws cloudformation package --template-file dev-template.yml --s3-bucket org.gear-scanner.build --s3-prefix product-nn-classifier/dev --output-template-file outputtemplate.yml
 artifacts:
   type: zip
