@@ -96,7 +96,6 @@ def classify(attepmt):
             doc["originalName"] = original_name
         except Exception as exc:
             logging.warning("Can't classify product: " + str(exc))
-    return doc
 
 
 def is_successful_attempt(attempt):
@@ -121,7 +120,10 @@ def is_successful_attempt(attempt):
 def write_to_db(table_name, product):
     logging.info("Saving record: " + str(product))
     table = DYNAMO_DB.Table(table_name)
-    product["document"]["price"] = Decimal(product["document"]["price"])
+    if "document" in product:
+        document = product["document"]
+        if "price" in document:
+            document["price"] = Decimal(product["document"]["price"])
     table.put_item(Item=product)
 #
 #

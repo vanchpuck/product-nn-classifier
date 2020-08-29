@@ -84,7 +84,7 @@ class TestRandom(unittest.TestCase):
     @mock.patch('main.Classifier.read_lines', side_effect=mock_read_lines_exception)
     @mock.patch('main.Classifier.read_dump', side_effect=mock_read_dump)
     def test_handler_exception(self, function1, function2):
-        irvis = {
+        g14 = {
             "url": "https://tramontana.ru/g14/",
             "timestamp": 1597872559908,
             "httpCode": 200,
@@ -101,13 +101,13 @@ class TestRandom(unittest.TestCase):
         }
         message = {
             "Records": [
-                {'messageId': '208271d8-08bc-4c29-84d0-4a4525567734', 'body': json.dumps(irvis)}
+                {'messageId': '208271d8-08bc-4c29-84d0-4a4525567734', 'body': json.dumps(g14)}
             ]
         }
         main.lambda_handler(message, None)
         table = main.DYNAMO_DB.Table(PRODUCT_TABLE)
-        actual_irvis = table.get_item(Key={"url": "https://tramontana.ru/g14/"})["Item"]
-        assert actual_irvis == irvis
+        actual_g14 = table.get_item(Key={"url": "https://tramontana.ru/g14/"})["Item"]
+        assert actual_g14 == g14
 
     @mock.patch('main.Classifier.read_lines', side_effect=mock_read_lines)
     @mock.patch('main.Classifier.read_dump', side_effect=mock_read_dump)
@@ -160,6 +160,25 @@ class TestRandom(unittest.TestCase):
         self.decode_actual(actual_lynx)
         self.add_original_name(lynx, "lynx")
         assert actual_lynx == lynx
+
+    @mock.patch('main.Classifier.read_lines', side_effect=mock_read_lines_exception)
+    @mock.patch('main.Classifier.read_dump', side_effect=mock_read_dump)
+    def test_handler_no_doc(self, function1, function2):
+        no_doc = {
+            "url": "https://tramontana.ru/no_doc/",
+            "timestamp": 1597872559908,
+            "httpCode": 404,
+            "responseTime": 413,
+        }
+        message = {
+            "Records": [
+                {'messageId': '208271d8-08bc-4c29-84d0-4a4525567734', 'body': json.dumps(no_doc)}
+            ]
+        }
+        main.lambda_handler(message, None)
+        table = main.DYNAMO_DB.Table(PRODUCT_TABLE)
+        actual_no_doc = table.get_item(Key={"url": "https://tramontana.ru/no_doc/"})["Item"]
+        assert actual_no_doc == no_doc
 
     @classmethod
     def decode_actual(cls, actual_one):
